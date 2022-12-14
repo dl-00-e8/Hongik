@@ -1,0 +1,25 @@
+// B911139, ¿Ã¡§¡¯
+
+#include <iostream>
+#include "post.h"
+
+using namespace std;
+
+void Eval(Expression);
+
+int main(void)
+{
+	char line[MAXLEN];
+	while (cin.getline(line, MAXLEN))
+	{
+		Expression e(line); // Assume postfix notation
+		try
+		{
+			Eval(e);
+		}
+		catch (char const* msg)
+		{
+			cerr << "Exception: " << msg << endl;
+		}
+	}
+}
