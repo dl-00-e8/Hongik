@@ -1,0 +1,57 @@
+(setq visited (list 0 0 0 0))
+
+(defun default ()
+  (do ((i 0 (1+ i)))
+      ((> i 3))
+    (setf (nth i visited) -1)
+  )
+)
+
+(defun output ()
+  (do ((i 0 (1+ i)))
+      ((> i 3))
+    (let ((x (+ 1 i))(y (+ 1 (nth i visited))))
+    (setq temp (list x y))
+    (write temp))
+  )
+  (format t "~%")
+)
+
+(defun nqueen (idx)
+  (if (= idx 4)
+    (output)
+  )
+
+  (if (< idx 4)
+    (do ((i 0 (1+ i)))
+        ((>= i 4))
+      (setf (nth idx visited) i)
+      (setq check 1)
+      (do ((temp 0 (1+ temp)))
+          ((>= temp idx))
+        (setq con1 (= (nth temp visited) (nth idx visited)))
+        (setq con2 (= (abs (- (nth idx visited) (nth temp visited))) (- idx temp)))
+
+        (if (eql con1 t)
+          (setq check 0)
+        )
+        (if (eql con2 t)
+          (setq check 0)
+        )
+      )
+
+
+      (let ((temp (+ 1 idx)))
+        (if (= check 1)
+           (nqueen temp)
+        )
+      )
+    )
+  )
+)
+
+(format t  "B911139~%")
+
+(default)
+
+(nqueen 0)
