@@ -1,0 +1,20 @@
+{
+    "transaction": [
+        {
+            "input": [
+                {
+                    "transactionId": "",
+                    "outputIdx": 0,
+                    "unlockingScript": ""
+                }
+            ],
+            "output": [
+                {
+                    "outputIdx": 0,
+                    "amount": 0,
+                    "lockingScript": ""
+                }
+            ]
+        }
+    ]
+}
