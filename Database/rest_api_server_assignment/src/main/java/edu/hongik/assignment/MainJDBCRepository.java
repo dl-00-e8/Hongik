@@ -71,8 +71,10 @@ public class MainJDBCRepository {
         return jdbcTemplate.queryForObject(sql, String.class, degree);
     }
 
-    public List<Student> getStudentByNameAndEmail(String name, String email) {
-        String sql = "SELECT name, email, degree, graduation FROM students WHERE name = ? AND email = ?";
+    public List<Student> getStudentByNameAndEmailAndDegreeAndGraduation(String name, String email, String degree, int graduation) {
+        String sql = "SELECT name, email, degree, graduation " +
+                "FROM students " +
+                "WHERE name = ? AND email = ? AND degree = ? AND graduation = ?";
         try {
             return jdbcTemplate.query(sql, new RowMapper<Student>() {
                 @Override
@@ -84,7 +86,7 @@ public class MainJDBCRepository {
                     student.setGraduation(rs.getInt("graduation"));
                     return student;
                 }
-            }, name);
+            }, name, email, degree, graduation);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }

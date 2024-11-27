@@ -46,7 +46,7 @@ public class MainController {
     @PutMapping("/students/register")
     public String registerStudent(@RequestParam(value = "name") String name,
                                   @RequestParam(value = "email") String email,
-                                  @RequestParam(value = "degree", required = false) String degree,
+                                  @RequestParam(value = "degree") String degree,
                                   @RequestParam(value = "graduation") int graduation) {
         try {
             return mainService.registerStudent(name, email, degree, graduation);

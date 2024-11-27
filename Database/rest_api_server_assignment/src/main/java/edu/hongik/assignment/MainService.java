@@ -51,8 +51,8 @@ public class MainService {
 
     @Transactional
     public String registerStudent(String name, String email, String degree, int graduation) {
-        // Validation - 이름과 이메일 데이터가 모두 일치하면 동일인으로 간주
-        List<Student> studentList = mainJDBCRepository.getDegreeByStudentName(name);
+        // Validation - 모든 데이터가 일치하면 동일인으로 간주
+        List<Student> studentList = mainJDBCRepository.getStudentByNameAndEmailAndDegreeAndGraduation(name, email, degree, graduation);
         if(!studentList.isEmpty()) {
             throw new IllegalArgumentException("Already registered");
         }
