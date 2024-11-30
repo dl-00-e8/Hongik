@@ -1,0 +1,20 @@
+[
+    {
+        "txid": "1234567890",
+        "outputIdx": 0,
+        "amount": 100,
+        "lockingScript": "OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG"
+    },
+    {
+        "txid": "0987654321",
+        "outputIdx": 1,
+        "amount": 50,
+        "lockingScript": "OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG"
+    },
+    {
+        "txid": "1122334455",
+        "outputIdx": 2,
+        "amount": 75,
+        "lockingScript": "OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG"
+    }
+]

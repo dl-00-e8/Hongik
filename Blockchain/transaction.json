@@ -1,20 +1,65 @@
-{
-    "transaction": [
-        {
-            "input": [
-                {
-                    "transactionId": "",
+[
+    {
+        "txid": "abcd1234efgh5678ijkl9012mnop3456qrst7890uvwx1234yzab5678cdef9012",
+        "input": [
+            {
+                "utxo": {
+                    "txid": "1234567890",
                     "outputIdx": 0,
-                    "unlockingScript": ""
-                }
-            ],
-            "output": [
-                {
-                    "outputIdx": 0,
-                    "amount": 0,
-                    "lockingScript": ""
-                }
-            ]
-        }
-    ]
-}
+                    "amount": 100,
+                    "lockingScript": "OP_DUP OP_HASH160 a06dabf53f43ac188a0ad125dcf78e04c26be0d4 OP_EQUALVERIFY OP_CHECKSIG"
+                },
+                "unlockingScript": "ae066f7c383cdf278183c8ac6d6ee3badb35a0e3de7fdb3bbd20184f7cdd5bf1 068b060316d566ba7a6c0e281f71e1de1a676643320a76d3459c9d269ff12c5f78bd2406572f45f8952ed1f9f19974df08bcbffbeec5be1ad563f34a8af97f15"
+            }
+        ],
+        "output": [
+            {
+                "outputIdx": 0,
+                "amount": 90,
+                "lockingScript": "OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG"
+            }
+        ]
+    },
+    {
+        "txid": "mnop3456qrst7890uvwx1234yzab5678cdef9012abcd1234efgh5678ijkl9012",
+        "input": [
+            {
+                "utxo": {
+                    "txid": "0987654321",
+                    "outputIdx": 1,
+                    "amount": 50,
+                    "lockingScript": "OP_DUP OP_HASH160 e6b31b0dfe9741a49dd19b87c8eb0b34ea8403d4 OP_EQUALVERIFY OP_CHECKSIG"
+                },
+                "unlockingScript": "10d5f4cd21dc477aa2a2cc971d49722eec85201e59f3409110d6403a7448cebc 6e3b54296c6c6abb579847218e7fdf9675a7943438aec9932603dcbd3afff3e10b788fd2096ea7f1973a49bd3f7dc487973151924695c784f0b6ecbc7c490173"
+            }
+        ],
+        "output": [
+            {
+                "outputIdx": 0,
+                "amount": 45,
+                "lockingScript": "OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG"
+            }
+        ]
+    },
+    {
+        "txid": "ijkl9012mnop3456qrst7890uvwx1234yzab5678cdef9012abcd1234efgh5678",
+        "input": [
+            {
+                "utxo": {
+                    "txid": "1122334455",
+                    "outputIdx": 2,
+                    "amount": 75,
+                    "lockingScript": "OP_DUP OP_HASH160 3a1186dd2c1aaf336e0de1a3da4c15d1de65a180 OP_EQUALVERIFY OP_CHECKSIG"
+                },
+                "unlockingScript": "55e3a39756f019a903b70bda41a18423fdf8312e94ac12a6091cea248d2fba7d 0bf1dac3678350db977ac89e893ab305135ddf0b9093d69a5c54579f3cebf986ef059ce5c1647c9dd078f84a096707b2ba3c6ab4ce1edd2116677efd91c030b3"
+            }
+        ],
+        "output": [
+            {
+                "outputIdx": 0,
+                "amount": 70,
+                "lockingScript": "OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG"
+            }
+        ]
+    }
+]
