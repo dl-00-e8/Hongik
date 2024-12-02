@@ -47,6 +47,7 @@ class fullNode:
         self.transaction_set = [] # Block에 포함되기 위해 대기하고 있는 Transaction들의 집합
         self.processed_transaction_list = [] # 현재까지 처리된 트랜잭션 정보 담음
         self.stack = []
+        self.transaction_idx = 0 # 하나씩 순차 실행 시 활용하는 idx
 
         self.initialize(utxo_path=utxo_path, transaction_path=transaction_path)
         self.gui_setting()
@@ -65,6 +66,12 @@ class fullNode:
         self.execution_engine_button.setFont(QFont('Pretendard', 15))
         self.execution_engine_button.clicked.connect(self.execute)
         layout.addWidget(self.execution_engine_button)
+
+        # 하나씩 실행하는 버튼
+        self.exectute_once_button = QPushButton("트랜잭션 하나씩 실행 시 사용하는 버튼")
+        self.exectute_once_button.setFont(QFont('Pretendard', 15))
+        self.exectute_once_button.clicked.connect(self.execute_once)
+        layout.addWidget(self.exectute_once_button)
 
         # 각 트랜잭션 처리 후 결과 출력
         self.result_text = QTextEdit()
@@ -234,6 +241,59 @@ class fullNode:
             # result_text에 트랜잭션 처리 결과 출력
             self.result_text.clear()
             self.result_text.setPlainText(result_text)  # 결과를 QTextEdit에 표시        
+
+    def execute_once(self):
+        if self.transaction_idx >= len(self.transaction_set):
+            self.result_text.clear()
+            self.result_text.setPlainText("실행할 트랜잭션이 남아있지 않습니다.")
+
+        transaction = self.transaction_set[self.transaction_idx]
+
+        result_text = f"transaction: {transaction.txid}\n"
+            
+        # 입력 출력 정보 출력
+        for input_utxo in transaction.input:
+            result_text += f"    input: txid={input_utxo.txid}, outputIdx={input_utxo.outputIdx}, amount={input_utxo.amount}, lockingScript={input_utxo.lockingScript}\n"
+        for output in transaction.output_list:
+            result_text += f"    output{output.outputIdx}: txid={transaction.txid}, outputIdx={output.outputIdx}, amount={output.amount}, lockingScript={output.lockingScript}\n"
+
+        # 각 입력에 대해 스크립트 검증
+        for i in range(len(transaction.input)):
+            input_utxo = transaction.input[i]
+            unlocking_script = transaction.unlockingScript[i]
+            
+            # 트랜잭션 데이터를 반복문에서 꺼내와서 활용
+            transaction_data = transaction.input[i].txid
+            
+            # 스크립트 검증
+            result, failed_operator = self.validate_script(input_utxo.lockingScript, unlocking_script, transaction_data)
+            if not result:
+                result_text += f"    validity check: failed at {failed_operator}\n"
+                self.processed_transaction_list.append([transaction.txid, "failed", failed_operator])
+                break
+            else:
+                result_text += "    validity check: passed\n"
+                self.processed_transaction_list.append([transaction.txid, "passed", ""])
+            
+            # 검증 성공한 경우 UTXO 업데이트
+            for input_utxo in transaction.input:
+                if input_utxo in self.utxo_set:
+                    self.utxo_set.remove(input_utxo)
+            for output in transaction.output_list:
+                self.utxo_set.append(utxo(
+                    txid=transaction.txid,
+                    outputIdx=output.outputIdx,
+                    amount=output.amount,
+                    lockingScript=output.lockingScript
+                ))
+
+        # index 증가
+        self.transaction_idx += 1
+
+        # result_text에 트랜잭션 처리 결과 출력
+        self.result_text.clear()
+        self.result_text.setPlainText(result_text)  # 결과를 QTextEdit에 표시   
+
 
     def validate_script(self, locking_script, unlocking_script, transaction_data: str):
         '''
