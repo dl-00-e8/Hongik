@@ -210,12 +210,10 @@ class fullNode:
                 transaction_data = transaction.input[i].txid
                 
                 # 스크립트 검증
-                result, failed_index = self.validate_script(input_utxo.lockingScript, unlocking_script, transaction_data)
+                result, failed_operator = self.validate_script(input_utxo.lockingScript, unlocking_script, transaction_data)
                 if not result:
-                    script_list = re.split("\|", unlocking_script + "|" + input_utxo.lockingScript)
-                    failed_command = script_list[failed_index]
-                    result_text += f"    validity check: failed at {failed_command}\n"
-                    self.processed_transaction_list.append([transaction.txid, "failed", failed_command])
+                    result_text += f"    validity check: failed at {failed_operator}\n"
+                    self.processed_transaction_list.append([transaction.txid, "failed", failed_operator])
                     break
                 else:
                     result_text += "    validity check: passed\n"
@@ -247,40 +245,40 @@ class fullNode:
 
         script_list = self.split_script(unlocking_script + "|" + locking_script, "\|")
         i = 0
-        while i < len(script_list):
+        while True:
             pointer = script_list[i]
             if pointer in op_set:
                 # 각 연산자에 맞는 함수 호출
                 if pointer == 'OP_DUP':
                     if not self.op_dup(self.stack):
-                        return False, i
+                        return False, pointer
                 elif pointer == 'OP_HASH160':
                     if not self.op_hash160(self.stack):
-                        return False, i
+                        return False, pointer
                 elif pointer == 'OP_EQUAL':
                     if not self.op_equal(self.stack):
-                        return False, i
+                        return False, pointer
                 elif pointer == 'OP_EQUALVERIFY':
                     if not self.op_equalverify(self.stack):
-                        return False, i
+                        return False, pointer
                 elif pointer == 'OP_CHECKSIG':
                     if not self.op_checksig(self.stack, transaction_data):
-                        return False, i
+                        return False, pointer
                 elif pointer == 'OP_CHECKSIGVERIFY':
                     if not self.op_checksigverify(self.stack, transaction_data):
-                        return False, i
+                        return False, pointer
                 elif pointer == 'OP_CHECKMULTISIG':
                     if not self.op_checkmultisig(self.stack, transaction_data):
-                        return False, i
+                        return False, pointer
                 elif pointer == 'OP_CHECKMULTISIGVERIFY':
                     if not self.op_checkmultisigverify(self.stack, transaction_data):
-                        return False, i
+                        return False, pointer
                 elif pointer == 'OP_CHECKFINALRESULT':
                     if not self.op_checkfinalresult(self.stack):
-                        return False, i
+                        return False, pointer
             elif pointer == 'IF':
                 if len(self.stack) < 1:
-                    return False, i
+                    return False, pointer
                 condition = self.stack.pop()
                 if condition != 'TRUE':
                     # IF 조건이 거짓이면 ELSE나 ENDIF까지 건너뛰기
@@ -296,72 +294,21 @@ class fullNode:
                 pass
             else:
                 self.stack.append(pointer)
-            i += 1
-
-        if len(self.stack) != 1:
-            return False, i - 1
-        elif len(self.stack) == 1 and self.stack[0] != 'TRUE':
-            # 여기서 남아있는게 script인지 확인하고 script실행 필요
-            return False, i - 1
-        return True, i - 1
     
-    def validate_script_divide_by_space(self, script: str, transaction_data: str):
-        op_set = set(['OP_DUP', 'OP_HASH160', 'OP_EQUAL', 'OP_EQUALVERIFY', 'OP_CHECKSIG', 'OP_CHECKSIGVERIFY', 'OP_CHECKMULTISIG', 'OP_CHECKMULTISIGVERIFY', 'OP_CHECKFINALRESULT'])
-        self.stack = [] # Stack based exceution 결과 판독을 위한 stack
-
-        script_list = self.split_script(script, " ")
-        i = 0
-        while i < len(script_list):
-            pointer = script_list[i]
-            if pointer in op_set:
-                # 각 연산자에 맞는 함수 호출
-                if pointer == 'OP_DUP':
-                    if not self.op_dup(self.stack):
-                        return False, i
-                elif pointer == 'OP_HASH160':
-                    if not self.op_hash160(self.stack):
-                        return False, i
-                elif pointer == 'OP_EQUAL':
-                    if not self.op_equal(self.stack):
-                        return False, i
-                elif pointer == 'OP_EQUALVERIFY':
-                    if not self.op_equalverify(self.stack):
-                        return False, i
-                elif pointer == 'OP_CHECKSIG':
-                    if not self.op_checksig(self.stack, transaction_data):
-                        return False, i
-                elif pointer == 'OP_CHECKSIGVERIFY':
-                    if not self.op_checksigverify(self.stack, transaction_data):
-                        return False, i
-                elif pointer == 'OP_CHECKMULTISIG':
-                    if not self.op_checkmultisig(self.stack, transaction_data):
-                        return False, i
-                elif pointer == 'OP_CHECKMULTISIGVERIFY':
-                    if not self.op_checkmultisigverify(self.stack, transaction_data):
-                        return False, i
-                elif pointer == 'OP_CHECKFINALRESULT':
-                    if not self.op_checkfinalresult(self.stack):
-                        return False, i
-            elif pointer == 'IF':
-                if len(self.stack) < 1:
-                    return False, i
-                condition = self.stack.pop()
-                if condition != 'TRUE':
-                    # IF 조건이 거짓이면 ELSE나 ENDIF까지 건너뛰기
-                    while i < len(script_list) and script_list[i] not in ['ELSE', 'ENDIF']:
-                        i += 1
-                    if i < len(script_list) and script_list[i] == 'ELSE':
-                        i += 1
-            elif pointer == 'ELSE':
-                # ENDIF까지 건너뛰기
-                while i < len(script_list) and script_list[i] != 'ENDIF':
-                    i += 1
-            elif pointer == 'ENDIF':
-                pass
-            else:
-                self.stack.append(pointer)
             i += 1
-        
+
+            # 탈출 조건 명시
+            if i >= len(script_list):
+                break
+
+        if len(self.stack) == 1:
+            data = self.stack.pop()
+            print(data)
+            data_list = self.split_script(data, ' ')
+            for value in data_list:
+                self.stack.append(value)
+            
+        return self.op_checkfinalresult(self.stack), 'OP_CHECKFINALRESULT'
     
     def split_script(self, script: str, divider: str):
         script_list = re.split(divider, script)
