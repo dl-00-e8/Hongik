@@ -9,7 +9,7 @@
         "txid": "0987654321",
         "outputIdx": 1,
         "amount": 50,
-        "lockingScript": "OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG"
+        "lockingScript": "OP_DUP|OP_HASH160|d705eaa8564f24dc4543c3b8fb8b46f38826f314|OP_EQUALVERIFY"
     },
     {
         "txid": "1122334455",

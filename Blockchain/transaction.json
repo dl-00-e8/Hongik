@@ -7,9 +7,9 @@
                     "txid": "1234567890",
                     "outputIdx": 0,
                     "amount": 100,
-                    "lockingScript": "OP_DUP|OP_HASH160|e4dc17740f79caa8db3a52394be781eb7ea988f6|OP_EQUALVERIFY|OP_CHECKSIG"
+                    "lockingScript": "OP_DUP|OP_HASH160|80d3533e1cedb869f47d9156078f7e3a03342eee|OP_EQUALVERIFY|OP_CHECKSIG"
                 },
-                "unlockingScript": "0c16202bcd89605d83129968680a7e8ecc021d412ec8b98baab5bce59239bb39|039fa6d67ea2b7670873112bb0c66ccc013df21c08d103aa6743b7d8af88c183aa"
+                "unlockingScript": "2c8298722a0a6c12cd1be04832d32880c1b594f1a990f9239f9284f85afd5842e7211905791f473bd1c7c9a5683ec83631ad8a1d4280915eacd212e49f86203b|029b4fd5675dbd4445a1fba23030ba1c11244b8bf24b4bd9f53cd4a8be9ae47d02"
             }
         ],
         "output": [
@@ -28,7 +28,7 @@
                     "txid": "0987654321",
                     "outputIdx": 1,
                     "amount": 50,
-                    "lockingScript": "OP_DUP|OP_HASH160|ee29c48dd6a6e341399829849709d58ab16851bb|OP_EQUALVERIFY"
+                    "lockingScript": "OP_DUP|OP_HASH160|d705eaa8564f24dc4543c3b8fb8b46f38826f314|OP_EQUALVERIFY"
                 },
                 "unlockingScript": "02359cab35e02e92a9b12e24f1aa57256f8045c866cbbbeedada704a18d97efc0d OP_CHECKSIG"
             }

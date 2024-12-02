@@ -8,8 +8,7 @@ from dataclasses import dataclass
 import hashlib
 import ecdsa
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QTextEdit, QVBoxLayout, QTableWidget, QTableWidgetItem
-from PyQt5.QtGui import QFont  # QFont를 임포트합니다.
-from PyQt5.QtCore import QTimer
+from PyQt5.QtGui import QFont
 
 
 '''
@@ -118,10 +117,10 @@ class fullNode:
         # 트랜잭션 테이블 업데이트
         self.transaction_table.setRowCount(len(transaction_snapshot))  # 행 수 설정
         for row, tx in enumerate(transaction_snapshot):
-            txid, validity = tx.split(", ")
+            txid, validity, details = tx.split(", ")
             self.transaction_table.setItem(row, 0, QTableWidgetItem(txid))
             self.transaction_table.setItem(row, 1, QTableWidgetItem(validity))
-            self.transaction_table.setItem(row, 2, QTableWidgetItem("상세 정보"))  # 필요에 따라 상세 정보 추가
+            self.transaction_table.setItem(row, 2, QTableWidgetItem(details))
     
     def snapshot_utxo(self): 
         '''
@@ -142,7 +141,7 @@ class fullNode:
         '''
         result = []
         for tx in self.processed_transaction_list:
-            tx_str = f"{tx.txid}, {'passed' if tx.valid else 'failed'}"
+            tx_str = f"{tx[0]}, {tx[1]}, {tx[2]}"
             result.append(tx_str)
         return result
 
@@ -208,7 +207,7 @@ class fullNode:
                 unlocking_script = transaction.unlockingScript[i]
                 
                 # 트랜잭션 데이터를 반복문에서 꺼내와서 활용
-                transaction_data = transaction.txid.encode()
+                transaction_data = transaction.input[i].txid
                 
                 # 스크립트 검증
                 result, failed_index = self.validate_script(input_utxo.lockingScript, unlocking_script, transaction_data)
@@ -216,13 +215,16 @@ class fullNode:
                     script_list = re.split("\|", unlocking_script + "|" + input_utxo.lockingScript)
                     failed_command = script_list[failed_index]
                     result_text += f"    validity check: failed at {failed_command}\n"
+                    self.processed_transaction_list.append([transaction.txid, "failed", failed_command])
                     break
-            else:
-                result_text += "    validity check: passed\n"
+                else:
+                    result_text += "    validity check: passed\n"
+                    self.processed_transaction_list.append([transaction.txid, "passed", ""])
                 
                 # 검증 성공한 경우 UTXO 업데이트
                 for input_utxo in transaction.input:
-                    self.utxo_set.remove(input_utxo)
+                    if input_utxo in self.utxo_set:
+                        self.utxo_set.remove(input_utxo)
                 for output in transaction.output_list:
                     self.utxo_set.append(utxo(
                         txid=transaction.txid,
@@ -230,11 +232,12 @@ class fullNode:
                         amount=output.amount,
                         lockingScript=output.lockingScript
                     ))
+
             # result_text에 트랜잭션 처리 결과 출력
             self.result_text.clear()
             self.result_text.setPlainText(result_text)  # 결과를 QTextEdit에 표시        
 
-    def validate_script(self, locking_script, unlocking_script, transaction_data: bytes):
+    def validate_script(self, locking_script, unlocking_script, transaction_data: str):
         '''
         Script 검증 함수 
         Return성공 시, True / 실패 시, False 반환
@@ -242,8 +245,7 @@ class fullNode:
         op_set = set(['OP_DUP', 'OP_HASH160', 'OP_EQUAL', 'OP_EQUALVERIFY', 'OP_CHECKSIG', 'OP_CHECKSIGVERIFY', 'OP_CHECKMULTISIG', 'OP_CHECKMULTISIGVERIFY', 'OP_CHECKFINALRESULT'])
         self.stack = [] # Stack based exceution 결과 판독을 위한 stack
 
-        script_list = re.split("\|", unlocking_script + "|" + locking_script)
-        print(script_list)
+        script_list = self.split_script(unlocking_script + "|" + locking_script, "\|")
         i = 0
         while i < len(script_list):
             pointer = script_list[i]
@@ -296,8 +298,14 @@ class fullNode:
         if len(self.stack) != 1:
             return False, i - 1
         elif len(self.stack) == 1 and self.stack[0] != 'TRUE':
+            # 여기서 남아있는게 script인지 확인하고 script실행 필요
             return False, i - 1
         return True, i - 1
+    
+    def split_script(self, script: str, divider: str):
+        script_list = re.split(divider, script)
+        # print(script_list)
+        return script_list
     
     def op_dup(self, stack: list):
         '''
@@ -318,12 +326,23 @@ class fullNode:
         if len(stack) < 1:
             return False
         top = stack.pop()
-        
+
         # SHA256 암호화
-        sha256_hashed = hashlib.sha256(top.encode()).digest()
-        # RIPEMD160 암호화
-        ripemd160_hashed = hashlib.new('ripemd160', sha256_hashed).hexdigest()
-        
+        if top.startswith('0x'):
+            sha256_hashed = hashlib.sha256(bytes.fromhex(top[2:])).digest()
+            # RIPEMD160 암호화
+            ripemd160_hashed = hashlib.new('ripemd160', sha256_hashed).hexdigest()
+        else:
+            if all(c in '0123456789abcdefABCDEF' for c in top):
+                sha256_hashed = hashlib.sha256(bytes.fromhex(top)).digest()
+                # RIPEMD160 암호화
+                ripemd160_hashed = hashlib.new('ripemd160', sha256_hashed).hexdigest()
+            else:
+                script_bytes = top.encode('utf-8')
+                sha256_hashed = hashlib.sha256(script_bytes).digest()
+                # RIPEMD160 암호화
+                ripemd160_hashed = hashlib.new('ripemd160', sha256_hashed).digest().hex()
+
         stack.append(ripemd160_hashed)
         return True
     
@@ -352,13 +371,11 @@ class fullNode:
             return False
         top1 = stack.pop()
         top2 = stack.pop()
-        print(top1)
-        print(top2)
         if top1 == top2:
             return True
         return False
 
-    def op_checksig(self, stack: list, transaction_data: bytes):
+    def op_checksig(self, stack: list, transaction_data: str):
         '''
         OP_CHECKSIG 연산자 함수 - Boolean으로 작업 성공/실패 여부 반환
         stack의 top 두 원소를 pop하여 top 원소(pubKey)를 이용하여 signature를 검증
@@ -368,20 +385,24 @@ class fullNode:
             return False
         pubkey = stack.pop()
         signature = stack.pop()
-        
         try:
             # secp256k1 곡선을 사용하는 ECDSA 검증
-            # vk = ecdsa.VerifyingKey.from_string(bytes.fromhex(pubkey), curve=ecdsa.SECP256k1)
-            # is_valid = vk.verify(bytes.fromhex(signature))
-            is_valid = True
+            # 압축된 공개 키로부터 공개 키 복원
+            vk = ecdsa.VerifyingKey.from_string(bytes.fromhex(pubkey), curve=ecdsa.SECP256k1)
+            # 메시지 해시
+            message_hash = hashlib.sha256(transaction_data.encode('utf-8')).digest()
+            
+            # 서명 검증
+            is_valid = vk.verify(bytes.fromhex(signature), message_hash)
             if is_valid:
                 stack.append("TRUE")
             else:
                 stack.append("FALSE")
             return True
-        except:
+        except Exception as e:
+            print(f"예외 발생: {e}")
             stack.append("FALSE")
-            return True
+            return False
 
     def op_checksigverify(self, stack: list, transaction_data: bytes):
         '''
@@ -397,7 +418,7 @@ class fullNode:
             # secp256k1 곡선을 사용하는 ECDSA 검증
             vk = ecdsa.VerifyingKey.from_string(bytes.fromhex(pubkey), curve=ecdsa.SECP256k1)
             is_valid = vk.verify(bytes.fromhex(signature), transaction_data, hashfunc=hashlib.sha256)
-            is_valid = True
+            # is_valid = True
             if is_valid:
                 return True
             return False
@@ -427,10 +448,8 @@ class fullNode:
         signatures = []
         for _ in range(m):
             signatures.append(stack.pop())
-            
-        # 더미 값 제거 (Bitcoin의 버그 호환성)
-        stack.pop()
         
+        # multisig 검증 부분 업데이트 필요
         # 트랜잭션 데이터 해시 생성
         tx_hash = hashlib.sha256(str(self.transaction_set).encode()).digest()
         
