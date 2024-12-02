@@ -10,7 +10,7 @@ compressed_public_key = public_key.to_string("compressed")
 compressed_public_key_hex = compressed_public_key.hex()
 
 # 메시지
-message = b"1234567890"
+message = b"1122334455"
 # 메시지 해시
 message_hash = hashlib.sha256(message).digest()
 

@@ -270,7 +270,7 @@ class fullNode:
                     if not self.op_checksigverify(self.stack, transaction_data):
                         return False, i
                 elif pointer == 'OP_CHECKMULTISIG':
-                    if not self.op_checkmultisig(self.stack):
+                    if not self.op_checkmultisig(self.stack, transaction_data):
                         return False, i
                 elif pointer == 'OP_CHECKFINALRESULT':
                     if not self.op_checkfinalresult(self.stack):
@@ -391,7 +391,6 @@ class fullNode:
             vk = ecdsa.VerifyingKey.from_string(bytes.fromhex(pubkey), curve=ecdsa.SECP256k1)
             # 메시지 해시
             message_hash = hashlib.sha256(transaction_data.encode('utf-8')).digest()
-            
             # 서명 검증
             is_valid = vk.verify(bytes.fromhex(signature), message_hash)
             if is_valid:
@@ -416,16 +415,19 @@ class fullNode:
         
         try:
             # secp256k1 곡선을 사용하는 ECDSA 검증
+            # 압축된 공개 키로부터 공개 키 복원
             vk = ecdsa.VerifyingKey.from_string(bytes.fromhex(pubkey), curve=ecdsa.SECP256k1)
-            is_valid = vk.verify(bytes.fromhex(signature), transaction_data, hashfunc=hashlib.sha256)
-            # is_valid = True
+            # 메시지 해시
+            message_hash = hashlib.sha256(transaction_data.encode('utf-8')).digest()
+            # 서명 검증
+            is_valid = vk.verify(bytes.fromhex(signature), message_hash)
             if is_valid:
                 return True
             return False
         except:
             return False
     
-    def op_checkmultisig(self, stack: list):
+    def op_checkmultisig(self, stack: list, transaction_data: str):
         '''
         OP_CHECKMULTISIG 연산자 함수 - Boolean으로 작업 성공/실패 여부 반환
         m-of-n 다중 서명 검증을 수행
@@ -434,24 +436,23 @@ class fullNode:
             return False
             
         n = int(stack.pop())  # 공개키 개수
-        if len(stack) < n + 1:
+        if len(stack) < n:
             return False
-            
+        
         pubkeys = []
         for _ in range(n):
             pubkeys.append(stack.pop())
-            
+
         m = int(stack.pop())  # 필요한 서명 개수
-        if len(stack) < m + 1:
+        if len(stack) < m:
             return False
-            
+   
         signatures = []
         for _ in range(m):
             signatures.append(stack.pop())
-        
-        # multisig 검증 부분 업데이트 필요
-        # 트랜잭션 데이터 해시 생성
-        tx_hash = hashlib.sha256(str(self.transaction_set).encode()).digest()
+
+        # 메시지 해시
+        message_hash = hashlib.sha256(transaction_data.encode('utf-8')).digest()
         
         # 각 서명에 대해 검증 수행
         try:
@@ -460,7 +461,7 @@ class fullNode:
                 for pubkey in pubkeys:
                     try:
                         vk = ecdsa.VerifyingKey.from_string(bytes.fromhex(pubkey), curve=ecdsa.SECP256k1)
-                        if vk.verify(bytes.fromhex(signature), tx_hash):
+                        if vk.verify(bytes.fromhex(signature), message_hash):
                             valid_sigs += 1
                             break
                     except:

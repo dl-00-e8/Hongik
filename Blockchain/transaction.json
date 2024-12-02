@@ -49,9 +49,9 @@
                     "txid": "1122334455",
                     "outputIdx": 2,
                     "amount": 75,
-                    "lockingScript": "2|039fa6d67ea2b7670873112bb0c66ccc013df21c08d103aa6743b7d8af88c183aa|03cb829a37cd24bc75965a6679e2116f2717bf9926118f5334e9f9bf7bb41137d7|02359cab35e02e92a9b12e24f1aa57256f8045c866cbbbeedada704a18d97efc0d|3|CHECKMULTISIG"
+                    "lockingScript": "2|032e1df9d805dfd60ba63d8f250f157445caba940c97a430a78b415576093da0af|027b31d97a4d789eaea53de08e1ff149460feabb591fce855329bc8b2d969729d4|02adb0edd48fe1ef02ceea01c303fe6d4996823f453f88c02470dab350e2bd6475|3|OP_CHECKMULTISIG"
                 },
-                "unlockingScript": "0c16202bcd89605d83129968680a7e8ecc021d412ec8b98baab5bce59239bb39|d5f9ed500fc648014abbd7a40313bfcea54b30b9b20659a2fa0afa5e19281081"
+                "unlockingScript": "bc0b46cf26ca8d9381ed1addf24581918b62e60c44013e251117411f5273961a3d36d182a93823d901b6e43c7869a5010b27783a5f7272dcc17e17490c6bd90a|561bb71e3d8f0c0b880a64804323073f673107b2d3b12a0fadbc074f987e267a3977ac436ee82972ebb3ad3502b34356949b34178b298bda32f8d105b1a4e2ad"
             }
         ],
         "output": [

@@ -1,4 +1,11 @@
+Tx 1번을 위한 데이터
 Pubkey hash: 80d3533e1cedb869f47d9156078f7e3a03342eee
 Signature:  2c8298722a0a6c12cd1be04832d32880c1b594f1a990f9239f9284f85afd5842e7211905791f473bd1c7c9a5683ec83631ad8a1d4280915eacd212e49f86203b
 Compressed Public Key (Hex): 029b4fd5675dbd4445a1fba23030ba1c11244b8bf24b4bd9f53cd4a8be9ae47d02
+Is the signature valid? True
+
+Tx 3번을 위한 데이터
+Pubkey hash: 42f8ec2b67ceb24116a8128abfe6412dffbcb846
+Signature:  bc0b46cf26ca8d9381ed1addf24581918b62e60c44013e251117411f5273961a3d36d182a93823d901b6e43c7869a5010b27783a5f7272dcc17e17490c6bd90a
+Compressed Public Key (Hex): 032e1df9d805dfd60ba63d8f250f157445caba940c97a430a78b415576093da0af
 Is the signature valid? True
