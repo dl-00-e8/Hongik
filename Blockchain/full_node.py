@@ -199,7 +199,8 @@ class fullNode:
             validity check: passed (or failed at xxx, xxx는 명령어 위치)
         '''
         result_text = ""
-        for transaction in self.transaction_set:
+        while len(self.transaction_set) != 0:
+            transaction = self.transaction_set.pop()
             result_text += f"transaction: {transaction.txid}\n"
             
             # 입력 출력 정보 출력
