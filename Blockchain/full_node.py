@@ -272,6 +272,9 @@ class fullNode:
                 elif pointer == 'OP_CHECKMULTISIG':
                     if not self.op_checkmultisig(self.stack, transaction_data):
                         return False, i
+                elif pointer == 'OP_CHECKMULTISIGVERIFY':
+                    if not self.op_checkmultisigverify(self.stack, transaction_data):
+                        return False, i
                 elif pointer == 'OP_CHECKFINALRESULT':
                     if not self.op_checkfinalresult(self.stack):
                         return False, i
@@ -301,6 +304,64 @@ class fullNode:
             # 여기서 남아있는게 script인지 확인하고 script실행 필요
             return False, i - 1
         return True, i - 1
+    
+    def validate_script_divide_by_space(self, script: str, transaction_data: str):
+        op_set = set(['OP_DUP', 'OP_HASH160', 'OP_EQUAL', 'OP_EQUALVERIFY', 'OP_CHECKSIG', 'OP_CHECKSIGVERIFY', 'OP_CHECKMULTISIG', 'OP_CHECKMULTISIGVERIFY', 'OP_CHECKFINALRESULT'])
+        self.stack = [] # Stack based exceution 결과 판독을 위한 stack
+
+        script_list = self.split_script(script, " ")
+        i = 0
+        while i < len(script_list):
+            pointer = script_list[i]
+            if pointer in op_set:
+                # 각 연산자에 맞는 함수 호출
+                if pointer == 'OP_DUP':
+                    if not self.op_dup(self.stack):
+                        return False, i
+                elif pointer == 'OP_HASH160':
+                    if not self.op_hash160(self.stack):
+                        return False, i
+                elif pointer == 'OP_EQUAL':
+                    if not self.op_equal(self.stack):
+                        return False, i
+                elif pointer == 'OP_EQUALVERIFY':
+                    if not self.op_equalverify(self.stack):
+                        return False, i
+                elif pointer == 'OP_CHECKSIG':
+                    if not self.op_checksig(self.stack, transaction_data):
+                        return False, i
+                elif pointer == 'OP_CHECKSIGVERIFY':
+                    if not self.op_checksigverify(self.stack, transaction_data):
+                        return False, i
+                elif pointer == 'OP_CHECKMULTISIG':
+                    if not self.op_checkmultisig(self.stack, transaction_data):
+                        return False, i
+                elif pointer == 'OP_CHECKMULTISIGVERIFY':
+                    if not self.op_checkmultisigverify(self.stack, transaction_data):
+                        return False, i
+                elif pointer == 'OP_CHECKFINALRESULT':
+                    if not self.op_checkfinalresult(self.stack):
+                        return False, i
+            elif pointer == 'IF':
+                if len(self.stack) < 1:
+                    return False, i
+                condition = self.stack.pop()
+                if condition != 'TRUE':
+                    # IF 조건이 거짓이면 ELSE나 ENDIF까지 건너뛰기
+                    while i < len(script_list) and script_list[i] not in ['ELSE', 'ENDIF']:
+                        i += 1
+                    if i < len(script_list) and script_list[i] == 'ELSE':
+                        i += 1
+            elif pointer == 'ELSE':
+                # ENDIF까지 건너뛰기
+                while i < len(script_list) and script_list[i] != 'ENDIF':
+                    i += 1
+            elif pointer == 'ENDIF':
+                pass
+            else:
+                self.stack.append(pointer)
+            i += 1
+        
     
     def split_script(self, script: str, divider: str):
         script_list = re.split(divider, script)
@@ -478,7 +539,7 @@ class fullNode:
             stack.append("FALSE")
             return True
         
-    def op_checkmultisigverify(self, stack: list):
+    def op_checkmultisigverify(self, stack: list, transaction_data: str):
         if len(stack) < 1:
             return False
             
@@ -498,11 +559,9 @@ class fullNode:
         for _ in range(m):
             signatures.append(stack.pop())
             
-        # 더미 값 제거 (Bitcoin의 버그 호환성)
-        stack.pop()
+         # 메시지 해시
+        message_hash = hashlib.sha256(transaction_data.encode('utf-8')).digest()
         
-        # 트랜잭션 데이터 해시 생성
-        tx_hash = hashlib.sha256(str(self.transaction_set).encode()).digest()
         
         # 각 서명에 대해 검증 수행
         try:
@@ -511,7 +570,7 @@ class fullNode:
                 for pubkey in pubkeys:
                     try:
                         vk = ecdsa.VerifyingKey.from_string(bytes.fromhex(pubkey), curve=ecdsa.SECP256k1)
-                        if vk.verify(bytes.fromhex(signature), tx_hash):
+                        if vk.verify(bytes.fromhex(signature), message_hash):
                             valid_sigs += 1
                             break
                     except:

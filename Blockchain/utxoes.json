@@ -3,7 +3,7 @@
         "txid": "1234567890",
         "outputIdx": 0,
         "amount": 100,
-        "lockingScript": "OP_DUP OP_HASH160 e4dc17740f79caa8db3a52394be781eb7ea988f6 OP_EQUALVERIFY OP_CHECKSIG"
+        "lockingScript": "OP_DUP|OP_HASH160|80d3533e1cedb869f47d9156078f7e3a03342eee|OP_EQUALVERIFY|OP_CHECKSIG"
     },
     {
         "txid": "0987654321",
@@ -15,6 +15,6 @@
         "txid": "1122334455",
         "outputIdx": 2,
         "amount": 75,
-        "lockingScript": "2 039fa6d67ea2b7670873112bb0c66ccc013df21c08d103aa6743b7d8af88c183aa 03cb829a37cd24bc75965a6679e2116f2717bf9926118f5334e9f9bf7bb41137d7 02359cab35e02e92a9b12e24f1aa57256f8045c866cbbbeedada704a18d97efc0d 3 CHECKMULTISIG"
+        "lockingScript": "2|032e1df9d805dfd60ba63d8f250f157445caba940c97a430a78b415576093da0af|027b31d97a4d789eaea53de08e1ff149460feabb591fce855329bc8b2d969729d4|02adb0edd48fe1ef02ceea01c303fe6d4996823f453f88c02470dab350e2bd6475|3|OP_CHECKMULTISIG"
     }
 ]
